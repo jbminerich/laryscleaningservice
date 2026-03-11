@@ -90,3 +90,7 @@ Configure these repository **Actions secrets**:
 - `GHCR_TOKEN` (must include package read/write)
 - `APP_DOMAIN` (`laryscleaningservices.org`)
 - `LETSENCRYPT_EMAIL`
+- `ADMIN_USERNAME`
+- `ADMIN_PASSWORD`
+- `ADMIN_SESSION_HOURS` (example: `12`)
+- `ADMIN_TOKEN` (optional fallback token; set a strong value)

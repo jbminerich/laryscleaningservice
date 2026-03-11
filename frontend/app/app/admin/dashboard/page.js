@@ -60,6 +60,11 @@ export default function AdminDashboardPage() {
 
       const payload = await response.json();
       if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem("adminToken");
+          router.push("/admin/login");
+          throw new Error("Session expired. Please sign in again.");
+        }
         throw new Error(payload?.detail || "Failed to load appointments.");
       }
 
@@ -71,9 +76,18 @@ export default function AdminDashboardPage() {
     }
   }
 
-  function logout() {
-    localStorage.removeItem("adminToken");
-    router.push("/admin/login");
+  async function logout() {
+    try {
+      if (adminToken) {
+        await fetch(`${apiBaseUrl}/admin/logout`, {
+          method: "POST",
+          headers: { "x-admin-token": adminToken },
+        });
+      }
+    } finally {
+      localStorage.removeItem("adminToken");
+      router.push("/admin/login");
+    }
   }
 
   function updateActionState(setter, appointmentId, key, value) {
@@ -103,6 +117,11 @@ export default function AdminDashboardPage() {
 
       const payload = await response.json();
       if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem("adminToken");
+          router.push("/admin/login");
+          throw new Error("Session expired. Please sign in again.");
+        }
         throw new Error(payload?.detail || "Action failed.");
       }
 
@@ -203,6 +222,11 @@ export default function AdminDashboardPage() {
 
       const payload = await response.json();
       if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem("adminToken");
+          router.push("/admin/login");
+          throw new Error("Session expired. Please sign in again.");
+        }
         throw new Error(payload?.detail || "Failed to block availability.");
       }
 

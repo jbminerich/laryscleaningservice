@@ -1,4 +1,5 @@
 import os
+import secrets
 from datetime import UTC, date, datetime, time, timedelta
 from itertools import count
 from typing import Literal
@@ -49,6 +50,9 @@ SERVICES = [
 
 APPOINTMENT_BUFFER_MINUTES = 30
 ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "change-me-admin-token")
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "change-me-password")
+ADMIN_SESSION_HOURS = int(os.getenv("ADMIN_SESSION_HOURS", "12"))
 
 customer_id_sequence = count(start=1)
 appointment_id_sequence = count(start=1)
@@ -57,6 +61,7 @@ block_id_sequence = count(start=1)
 customers: list[dict] = []
 appointments: list[dict] = []
 availability_blocks: list[dict] = []
+admin_sessions: dict[str, datetime] = {}
 
 
 class TimeWindow(BaseModel):
@@ -106,6 +111,11 @@ class AvailabilityBlockIn(BaseModel):
     reason: str = Field(min_length=2, max_length=200)
 
 
+class AdminLoginIn(BaseModel):
+    username: str = Field(min_length=1, max_length=120)
+    password: str = Field(min_length=1, max_length=200)
+
+
 def to_utc(value: datetime) -> datetime:
     if value.tzinfo is None:
         return value.replace(tzinfo=UTC)
@@ -139,8 +149,30 @@ def has_schedule_conflict(start: datetime, end: datetime, ignore_appointment_id:
 
 
 def require_admin(x_admin_token: str | None) -> None:
-    if not x_admin_token or x_admin_token != ADMIN_TOKEN:
+    if not x_admin_token:
         raise HTTPException(status_code=401, detail="Unauthorized")
+
+    if x_admin_token == ADMIN_TOKEN:
+        return
+
+    cleanup_expired_admin_sessions()
+    expires_at = admin_sessions.get(x_admin_token)
+    if not expires_at or expires_at <= datetime.now(UTC):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+
+def cleanup_expired_admin_sessions() -> None:
+    now = datetime.now(UTC)
+    expired_tokens = [token for token, expires_at in admin_sessions.items() if expires_at <= now]
+    for token in expired_tokens:
+        del admin_sessions[token]
+
+
+def create_admin_session_token() -> tuple[str, datetime]:
+    token = secrets.token_urlsafe(32)
+    expires_at = datetime.now(UTC) + timedelta(hours=ADMIN_SESSION_HOURS)
+    admin_sessions[token] = expires_at
+    return token, expires_at
 
 
 def get_or_create_customer(payload: AppointmentRequestIn) -> dict:
@@ -193,6 +225,28 @@ def health() -> dict:
 @app.get("/services")
 def services() -> dict:
     return {"services": SERVICES}
+
+
+@app.post("/admin/login")
+def admin_login(payload: AdminLoginIn) -> dict:
+    if payload.username != ADMIN_USERNAME or payload.password != ADMIN_PASSWORD:
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+
+    cleanup_expired_admin_sessions()
+    token, expires_at = create_admin_session_token()
+
+    return {
+        "message": "Login successful",
+        "admin_token": token,
+        "expires_at": expires_at,
+    }
+
+
+@app.post("/admin/logout")
+def admin_logout(x_admin_token: str | None = Header(default=None)) -> dict:
+    if x_admin_token and x_admin_token in admin_sessions:
+        del admin_sessions[x_admin_token]
+    return {"message": "Logged out"}
 
 
 @app.post("/appointments/request")

@@ -71,6 +71,10 @@ jobs:
             cat > infra/.env.prod <<'EOT'
             APP_DOMAIN=${{ secrets.APP_DOMAIN }}
             FRONTEND_IMAGE=${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+            ADMIN_USERNAME=${{ secrets.ADMIN_USERNAME }}
+            ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}
+            ADMIN_SESSION_HOURS=${{ secrets.ADMIN_SESSION_HOURS }}
+            ADMIN_TOKEN=${{ secrets.ADMIN_TOKEN }}
             LETSENCRYPT_EMAIL=${{ secrets.LETSENCRYPT_EMAIL }}
             EOT
 

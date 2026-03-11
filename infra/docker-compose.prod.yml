@@ -31,6 +31,11 @@ services:
       dockerfile: Dockerfile
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     restart: unless-stopped
+    environment:
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - ADMIN_SESSION_HOURS=${ADMIN_SESSION_HOURS}
+      - ADMIN_TOKEN=${ADMIN_TOKEN}
     labels:
       - traefik.enable=true
       - traefik.http.routers.backend.rule=Host(`${APP_DOMAIN}`) && PathPrefix(`/api`)
