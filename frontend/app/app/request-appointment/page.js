@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { getApiBaseUrl } from "../lib/apiBaseUrl";
 
 const SERVICE_OPTIONS = [
   "Standard Cleaning",
@@ -71,7 +72,7 @@ export default function RequestAppointmentPage() {
       return;
     }
 
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://api.localhost";
+    const apiBaseUrl = getApiBaseUrl();
 
     try {
       const response = await fetch(`${apiBaseUrl}/appointments/request`, {

@@ -25,6 +25,25 @@ services:
     networks:
       - proxy
 
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.backend.rule=Host(`${APP_DOMAIN}`) && PathPrefix(`/api`)
+      - traefik.http.routers.backend.entrypoints=websecure
+      - traefik.http.routers.backend.tls=true
+      - traefik.http.routers.backend.tls.certresolver=le
+      - traefik.http.routers.backend.priority=100
+      - traefik.http.routers.backend.middlewares=backend-strip@docker,default-chain@file
+      - traefik.http.middlewares.backend-strip.stripprefix.prefixes=/api
+      - traefik.http.services.backend.loadbalancer.server.port=8000
+    networks:
+      - proxy
+
   frontend:
     image: ${FRONTEND_IMAGE}
     restart: unless-stopped

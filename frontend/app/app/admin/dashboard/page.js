@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getApiBaseUrl } from "../../lib/apiBaseUrl";
 
 const STATUS_OPTIONS = ["all", "requested", "confirmed", "proposed_time", "declined", "completed"];
 
@@ -29,7 +30,7 @@ export default function AdminDashboardPage() {
   const [declineForm, setDeclineForm] = useState({});
   const [blockForm, setBlockForm] = useState({ start: "", end: "", reason: "" });
 
-  const apiBaseUrl = useMemo(() => process.env.NEXT_PUBLIC_API_BASE_URL || "http://api.localhost", []);
+  const apiBaseUrl = useMemo(() => getApiBaseUrl(), []);
 
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
