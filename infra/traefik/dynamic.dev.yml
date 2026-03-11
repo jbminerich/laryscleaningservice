@@ -1,0 +1,43 @@
+http:
+  middlewares:
+    security-headers:
+      headers:
+        frameDeny: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        referrerPolicy: "strict-origin-when-cross-origin"
+    gzip-compress:
+      compress: {}
+    default-chain:
+      chain:
+        middlewares:
+          - security-headers
+          - gzip-compress
+
+  routers:
+    backend:
+      rule: Host(`api.localhost`)
+      entryPoints:
+        - web
+      middlewares:
+        - default-chain
+      service: backend
+
+    frontend:
+      rule: Host(`app.localhost`)
+      entryPoints:
+        - web
+      middlewares:
+        - default-chain
+      service: frontend
+
+  services:
+    backend:
+      loadBalancer:
+        servers:
+          - url: http://backend:8000
+
+    frontend:
+      loadBalancer:
+        servers:
+          - url: http://frontend:3000

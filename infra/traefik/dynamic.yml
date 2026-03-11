@@ -1,0 +1,31 @@
+http:
+  middlewares:
+    security-headers:
+      headers:
+        frameDeny: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        referrerPolicy: "strict-origin-when-cross-origin"
+
+    gzip-compress:
+      compress: {}
+
+    https-redirect:
+      redirectScheme:
+        scheme: https
+        permanent: true
+
+    default-chain:
+      chain:
+        middlewares:
+          - security-headers
+          - gzip-compress
+
+  routers:
+    http-catchall:
+      rule: HostRegexp(`{host:.+}`)
+      entryPoints:
+        - web
+      middlewares:
+        - https-redirect
+      service: noop@internal
