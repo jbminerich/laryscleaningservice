@@ -40,8 +40,9 @@ Use this on your **separate OCI host** (`132.226.99.124`) after cloning the repo
 Point these records to `132.226.99.124`:
 
 - `laryscleaningservices.org`
-- `www.laryscleaningservices.org`
 - `api.laryscleaningservices.org`
+
+`www.laryscleaningservices.org` is optional. Add it only after creating a valid DNS record, then update Traefik router rules to include `www`.
 
 ### 2) Create production env file
 
