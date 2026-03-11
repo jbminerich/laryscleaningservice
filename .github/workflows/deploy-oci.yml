@@ -71,6 +71,10 @@ jobs:
             set -e
             cd ${{ secrets.OCI_DEPLOY_PATH }}
 
+            git fetch --all --prune
+            git checkout main
+            git reset --hard ${{ github.sha }}
+
             mkdir -p infra/traefik/letsencrypt
             touch infra/traefik/letsencrypt/acme.json
             chmod 600 infra/traefik/letsencrypt/acme.json
