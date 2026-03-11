@@ -32,8 +32,8 @@ export default function HomePage() {
               <a className="btn btn-primary" href="tel:+15555555555">
                 Call for a Free Estimate
               </a>
-              <a className="btn btn-secondary" href="mailto:hello@laryscleaningservices.org">
-                Request by Email
+              <a className="btn btn-secondary" href="/request-appointment">
+                Request Appointment Online
               </a>
             </div>
           </div>
@@ -84,6 +84,9 @@ export default function HomePage() {
           <p>
             Call or text <strong>(555) 555-5555</strong> and we&apos;ll help you pick the right
             cleaning plan.
+          </p>
+          <p>
+            Prefer online booking? <a href="/request-appointment">Submit an appointment request</a>.
           </p>
         </div>
       </section>

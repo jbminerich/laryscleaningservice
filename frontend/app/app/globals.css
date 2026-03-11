@@ -180,6 +180,102 @@ h2 {
   margin-bottom: 3rem;
 }
 
+.request-wrap {
+  max-width: 840px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 1.4rem;
+  margin-bottom: 2rem;
+}
+
+.request-title {
+  margin-bottom: 0.35rem;
+}
+
+.request-subtitle {
+  margin-top: 0;
+  color: var(--muted);
+}
+
+.request-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.request-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 600;
+}
+
+.request-form input,
+.request-form select,
+.request-form textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.7rem 0.75rem;
+  font: inherit;
+  color: var(--text);
+  background: #fff;
+}
+
+.request-form textarea {
+  resize: vertical;
+}
+
+.field-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.field-grid.two-col {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.field-grid.three-col {
+  grid-template-columns: 1fr 1fr auto;
+  align-items: end;
+}
+
+.window-list {
+  display: grid;
+  gap: 0.75rem;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  padding: 0.85rem;
+  background: #fbfdff;
+}
+
+.window-title {
+  margin: 0;
+  font-weight: 700;
+}
+
+.btn-small {
+  padding: 0.62rem 0.8rem;
+}
+
+.form-error,
+.form-success {
+  margin: 0;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+}
+
+.form-error {
+  background: #fff1f2;
+  border: 1px solid #ffcbd1;
+  color: #9f1239;
+}
+
+.form-success {
+  background: #ecfeff;
+  border: 1px solid #bae6fd;
+  color: #155e75;
+}
+
 @media (max-width: 900px) {
   .hero-grid {
     grid-template-columns: 1fr;
@@ -187,6 +283,11 @@ h2 {
 
   .card-grid {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .field-grid.two-col,
+  .field-grid.three-col {
+    grid-template-columns: 1fr;
   }
 }
 
