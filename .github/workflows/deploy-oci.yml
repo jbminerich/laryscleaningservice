@@ -11,11 +11,10 @@ permissions:
 
 env:
   FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/laryscleaningservice-frontend
-  BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/laryscleaningservice-backend
 
 jobs:
   build-and-push:
-    name: Build and push container images
+    name: Build and push frontend image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -30,16 +29,6 @@ jobs:
           registry: ghcr.io
           username: ${{ secrets.GHCR_USERNAME }}
           password: ${{ secrets.GHCR_TOKEN }}
-
-      - name: Build and push backend image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./backend
-          file: ./backend/Dockerfile
-          push: true
-          tags: |
-            ${{ env.BACKEND_IMAGE }}:latest
-            ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
 
       - name: Build and push frontend image
         uses: docker/build-push-action@v6
@@ -81,9 +70,7 @@ jobs:
 
             cat > infra/.env.prod <<'EOT'
             APP_DOMAIN=${{ secrets.APP_DOMAIN }}
-            API_DOMAIN=${{ secrets.API_DOMAIN }}
             FRONTEND_IMAGE=${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
-            BACKEND_IMAGE=${{ env.BACKEND_IMAGE }}:${{ github.sha }}
             LETSENCRYPT_EMAIL=${{ secrets.LETSENCRYPT_EMAIL }}
             EOT
 

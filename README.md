@@ -1,9 +1,8 @@
 # laryscleaningservices.org stack
 
-Production-ready web stack for **Lary's Cleaning Services** modeled after the `jeremythevet` pattern:
+Production-ready web stack for **Lary's Cleaning Services**:
 
 - **Frontend:** Next.js (App Router)
-- **Backend:** FastAPI
 - **Reverse Proxy:** Traefik
 - **Orchestration:** Docker Compose (dev + prod)
 - **Target host:** OCI VM `132.226.99.124`
@@ -12,7 +11,6 @@ Production-ready web stack for **Lary's Cleaning Services** modeled after the `j
 ## Project Layout
 
 ```text
-backend/                      FastAPI API
 frontend/app/                 Next.js app
 infra/                        Compose + Traefik configs
 ```
@@ -28,7 +26,6 @@ docker compose -f infra/docker-compose.dev.yml up --build
 Local URLs:
 
 - `http://app.localhost` → frontend
-- `http://api.localhost` → backend
 - `http://localhost:8080` → Traefik dashboard
 
 ## Production Deployment (OCI)
@@ -40,7 +37,6 @@ Use this on your **separate OCI host** (`132.226.99.124`) after cloning the repo
 Point these records to `132.226.99.124`:
 
 - `laryscleaningservices.org`
-- `api.laryscleaningservices.org`
 
 `www.laryscleaningservices.org` is optional. Add it only after creating a valid DNS record, then update Traefik router rules to include `www`.
 
@@ -68,7 +64,7 @@ Open inbound ports on the OCI instance/security list:
 
 ## Notes
 
-- Traefik is configured with Let's Encrypt TLS (`tlschallenge`) and HTTP→HTTPS redirect.
+- Traefik is configured with Let's Encrypt TLS (`httpchallenge`) and HTTP→HTTPS redirect.
 - Update `LETSENCRYPT_EMAIL` in `infra/.env.prod` before go-live.
 
 ## GitHub Actions CI/CD (auto upload + deploy)
@@ -79,8 +75,8 @@ A deployment workflow is included at:
 
 It does the following on every push to `main`:
 
-1. Builds backend/frontend Docker images
-2. Pushes images to GHCR
+1. Builds frontend Docker image
+2. Pushes image to GHCR
 3. SSHes into OCI VM and runs `docker compose pull && up -d`
 
 Configure these repository **Actions secrets**:
@@ -93,5 +89,4 @@ Configure these repository **Actions secrets**:
 - `GHCR_USERNAME`
 - `GHCR_TOKEN` (must include package read/write)
 - `APP_DOMAIN` (`laryscleaningservices.org`)
-- `API_DOMAIN` (`api.laryscleaningservices.org`)
 - `LETSENCRYPT_EMAIL`

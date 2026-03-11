@@ -1,58 +1,91 @@
+import Image from "next/image";
+import logo from "../Logo.png";
+
 const services = [
   "Standard House Cleaning",
   "Deep Cleaning",
   "Move-In / Move-Out Cleaning",
   "Recurring Weekly / Bi-Weekly Cleaning",
+  "Kitchen + Bathroom Detail Cleaning",
+  "Office & Small Commercial Cleaning",
 ];
 
-export default async function HomePage() {
-  let apiServices = [];
-  const apiBase = process.env.INTERNAL_API_BASE_URL || "http://localhost:8000";
+const highlights = [
+  "Bonded & insured team",
+  "Eco-friendly products available",
+  "Simple booking and reliable arrival windows",
+];
 
-  try {
-    const res = await fetch(`${apiBase}/services`, { cache: "no-store" });
-    if (res.ok) {
-      const data = await res.json();
-      apiServices = data.services || [];
-    }
-  } catch {
-    // Fallback handled below
-  }
-
+export default function HomePage() {
   return (
-    <main className="container">
-      <h1>Lary&apos;s Cleaning Services</h1>
-      <p className="lead">Reliable, detail-focused cleaning for homes and offices.</p>
+    <main>
+      <section className="hero">
+        <div className="container hero-grid">
+          <div>
+            <p className="eyebrow">House Cleaning • Reliable • Professional</p>
+            <h1>Lary&apos;s Cleaning Services</h1>
+            <p className="lead">
+              A modern cleaning experience for busy households. We help you enjoy a fresh,
+              calm, spotless home week after week.
+            </p>
+            <div className="cta-row">
+              <a className="btn btn-primary" href="tel:+15555555555">
+                Call for a Free Estimate
+              </a>
+              <a className="btn btn-secondary" href="mailto:hello@laryscleaningservices.org">
+                Request by Email
+              </a>
+            </div>
+          </div>
 
-      <section>
-        <h2>Popular Services</h2>
-        <ul>
-          {services.map((service) => (
-            <li key={service}>{service}</li>
-          ))}
-        </ul>
+          <div className="logo-card">
+            <Image
+              src={logo}
+              alt="Lary's Cleaning Services logo"
+              width={440}
+              height={440}
+              priority
+            />
+          </div>
+        </div>
       </section>
 
-      <section>
-        <h2>API Service Catalog</h2>
-        {apiServices.length > 0 ? (
-          <ul>
-            {apiServices.map((service) => (
-              <li key={service.name}>
-                <strong>{service.name}:</strong> {service.description}
-              </li>
+      <section className="section">
+        <div className="container">
+          <h2>Services Designed for Real Life</h2>
+          <div className="card-grid">
+            {services.map((service) => (
+              <article className="card" key={service}>
+                <h3>{service}</h3>
+                <p>
+                  Customized to your home layout, priorities, and preferred schedule for
+                  dependable results.
+                </p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section section-soft">
+        <div className="container">
+          <h2>Why Homeowners Choose Us</h2>
+          <ul className="checklist">
+            {highlights.map((item) => (
+              <li key={item}>{item}</li>
             ))}
           </ul>
-        ) : (
-          <p>API catalog unavailable right now. Backend may still be starting.</p>
-        )}
+        </div>
       </section>
 
-      <section>
-        <h2>Book an Estimate</h2>
-        <p>
-          Call or text us to schedule your cleaning: <strong>(555) 555-5555</strong>
-        </p>
+      <section className="section">
+        <div className="container final-cta">
+          <h2>Ready for a Cleaner Home?</h2>
+          <p>
+            Call or text <strong>(555) 555-5555</strong> and we&apos;ll help you pick the right
+            cleaning plan.
+          </p>
+        </div>
       </section>
     </main>
   );
