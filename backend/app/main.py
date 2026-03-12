@@ -1,6 +1,8 @@
 import os
 import secrets
+import smtplib
 from datetime import UTC, date, datetime, time, timedelta
+from email.message import EmailMessage
 from itertools import count
 from typing import Literal
 
@@ -53,6 +55,16 @@ ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "change-me-admin-token")
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "change-me-password")
 ADMIN_SESSION_HOURS = int(os.getenv("ADMIN_SESSION_HOURS", "12"))
+
+SMTP_HOST = os.getenv("SMTP_HOST", "")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USERNAME = os.getenv("SMTP_USERNAME", "")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", "")
+SMTP_USE_TLS = os.getenv("SMTP_USE_TLS", "true").lower() == "true"
+APPOINTMENT_NOTIFICATION_TO = os.getenv(
+    "APPOINTMENT_NOTIFICATION_TO", "ilariellysilva02@gmail.com"
+)
 
 customer_id_sequence = count(start=1)
 appointment_id_sequence = count(start=1)
@@ -203,6 +215,53 @@ def get_or_create_customer(payload: AppointmentRequestIn) -> dict:
     return customer
 
 
+def send_appointment_notification(appointment: dict) -> None:
+    if not SMTP_HOST or not SMTP_USERNAME or not SMTP_PASSWORD or not SMTP_FROM_EMAIL:
+        print(
+            "[email] Skipping appointment notification: missing SMTP_HOST/SMTP_USERNAME/"
+            "SMTP_PASSWORD/SMTP_FROM_EMAIL"
+        )
+        return
+
+    windows_text = "\n".join(
+        [f"- {window['start'].isoformat()} to {window['end'].isoformat()}" for window in appointment["preferred_windows"]]
+    )
+
+    message = EmailMessage()
+    message["Subject"] = f"New Appointment Request #{appointment['id']}"
+    message["From"] = SMTP_FROM_EMAIL
+    message["To"] = APPOINTMENT_NOTIFICATION_TO
+    message.set_content(
+        "\n".join(
+            [
+                "A new appointment request was submitted.",
+                "",
+                f"Appointment ID: {appointment['id']}",
+                f"Name: {appointment['customer_name']}",
+                f"Email: {appointment['customer_email']}",
+                f"Phone: {appointment['customer_phone']}",
+                f"Address: {appointment['address']}",
+                f"Service: {appointment['service_name']}",
+                f"Recurrence: {appointment['recurrence']}",
+                "Preferred windows (UTC):",
+                windows_text,
+                "",
+                "Notes:",
+                appointment.get("notes") or "(none)",
+            ]
+        )
+    )
+
+    try:
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=20) as smtp:
+            if SMTP_USE_TLS:
+                smtp.starttls()
+            smtp.login(SMTP_USERNAME, SMTP_PASSWORD)
+            smtp.send_message(message)
+    except Exception as exc:
+        print(f"[email] Failed to send appointment notification: {exc}")
+
+
 def serialize_appointment(appointment: dict) -> dict:
     return {
         **appointment,
@@ -280,6 +339,7 @@ def request_appointment(payload: AppointmentRequestIn) -> dict:
         "updated_at": datetime.now(UTC),
     }
     appointments.append(appointment)
+    send_appointment_notification(appointment)
 
     return {
         "message": "Appointment request received",

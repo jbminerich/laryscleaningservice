@@ -75,6 +75,13 @@ jobs:
             ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}
             ADMIN_SESSION_HOURS=${{ secrets.ADMIN_SESSION_HOURS }}
             ADMIN_TOKEN=${{ secrets.ADMIN_TOKEN }}
+            APPOINTMENT_NOTIFICATION_TO=${{ secrets.APPOINTMENT_NOTIFICATION_TO }}
+            SMTP_HOST=${{ secrets.SMTP_HOST }}
+            SMTP_PORT=${{ secrets.SMTP_PORT }}
+            SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}
+            SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
+            SMTP_FROM_EMAIL=${{ secrets.SMTP_FROM_EMAIL }}
+            SMTP_USE_TLS=${{ secrets.SMTP_USE_TLS }}
             LETSENCRYPT_EMAIL=${{ secrets.LETSENCRYPT_EMAIL }}
             EOT
 

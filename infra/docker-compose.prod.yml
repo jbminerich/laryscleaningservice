@@ -36,6 +36,13 @@ services:
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
       - ADMIN_SESSION_HOURS=${ADMIN_SESSION_HOURS}
       - ADMIN_TOKEN=${ADMIN_TOKEN}
+      - APPOINTMENT_NOTIFICATION_TO=${APPOINTMENT_NOTIFICATION_TO}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL}
+      - SMTP_USE_TLS=${SMTP_USE_TLS}
     labels:
       - traefik.enable=true
       - traefik.http.routers.backend.rule=Host(`${APP_DOMAIN}`) && PathPrefix(`/api`)

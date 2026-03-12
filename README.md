@@ -95,3 +95,20 @@ Configure these repository **Actions secrets**:
 - `ADMIN_PASSWORD`
 - `ADMIN_SESSION_HOURS` (example: `12`)
 - `ADMIN_TOKEN` (optional fallback token; set a strong value)
+- `APPOINTMENT_NOTIFICATION_TO` (set to `ilariellysilva02@gmail.com`)
+- `SMTP_HOST` (example: `smtp.gmail.com`)
+- `SMTP_PORT` (example: `587`)
+- `SMTP_USERNAME`
+- `SMTP_PASSWORD` (for Gmail, use an App Password)
+- `SMTP_FROM_EMAIL`
+- `SMTP_USE_TLS` (`true` recommended)
+
+### Appointment email notifications
+
+When a customer submits `/request-appointment`, the backend sends an email notification to `APPOINTMENT_NOTIFICATION_TO`.
+
+For Gmail SMTP, typical values are:
+
+- `SMTP_HOST=smtp.gmail.com`
+- `SMTP_PORT=587`
+- `SMTP_USE_TLS=true`
