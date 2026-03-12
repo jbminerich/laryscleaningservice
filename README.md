@@ -52,7 +52,8 @@ cp infra/.env.prod.example infra/.env.prod
 
 ```bash
 docker compose -f infra/docker-compose.prod.yml --env-file infra/.env.prod pull
-docker compose -f infra/docker-compose.prod.yml --env-file infra/.env.prod up -d
+docker compose -f infra/docker-compose.prod.yml --env-file infra/.env.prod build backend
+docker compose -f infra/docker-compose.prod.yml --env-file infra/.env.prod up -d --remove-orphans
 ```
 
 ### 4) Required OCI networking

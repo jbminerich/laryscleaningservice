@@ -80,4 +80,5 @@ jobs:
 
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
             docker compose -f infra/docker-compose.prod.yml --env-file infra/.env.prod pull
-            docker compose -f infra/docker-compose.prod.yml --env-file infra/.env.prod up -d
+            docker compose -f infra/docker-compose.prod.yml --env-file infra/.env.prod build backend
+            docker compose -f infra/docker-compose.prod.yml --env-file infra/.env.prod up -d --remove-orphans
