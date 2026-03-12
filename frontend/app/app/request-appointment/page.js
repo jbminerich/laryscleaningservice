@@ -55,9 +55,6 @@ function getAppointmentRequestCandidates() {
     candidates.push(origin);
   }
 
-  candidates.push("https://laryscleaningservices.org/api");
-  candidates.push("https://laryscleaningservices.org");
-
   return [...new Set(candidates.map((value) => value.replace(/\/$/, "")))];
 }
 
@@ -66,31 +63,34 @@ async function submitAppointmentRequest(payload) {
   let lastError = "";
 
   for (const baseUrl of candidates) {
-    const requestUrl = baseUrl.endsWith("/appointment-request-proxy")
-      ? baseUrl
-      : `${baseUrl}/appointments/request`;
+    const requestUrl = baseUrl.endsWith("/appointment-request-proxy") ? baseUrl : `${baseUrl}/appointments/request`;
 
-    const response = await fetch(requestUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const response = await fetch(requestUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    const parsed = await parseApiResponse(response);
-    if (response.ok) {
-      return parsed;
-    }
+      const parsed = await parseApiResponse(response);
+      if (response.ok) {
+        return parsed;
+      }
 
-    if (response.status === 404) {
-      lastError = parsed?.detail || "Endpoint not found.";
+      if (response.status === 404 || response.status === 502 || response.status === 503) {
+        lastError = parsed?.upstream_error || parsed?.detail || `Endpoint unavailable (${response.status}).`;
+        continue;
+      }
+
+      if (parsed?.upstream_error) {
+        throw new Error(`${parsed?.detail || "Unable to submit appointment request."} (${parsed.upstream_error})`);
+      }
+
+      throw new Error(parsed?.detail || "Unable to submit appointment request.");
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : "Unknown request error";
       continue;
     }
-
-    if (parsed?.upstream_error) {
-      throw new Error(`${parsed?.detail || "Unable to submit appointment request."} (${parsed.upstream_error})`);
-    }
-
-    throw new Error(parsed?.detail || "Unable to submit appointment request.");
   }
 
   throw new Error(

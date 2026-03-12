@@ -6,8 +6,6 @@ function getBackendBaseUrls() {
   const candidates = [
     fromEnv,
     "http://backend:8000",
-    "https://laryscleaningservices.org/api",
-    "https://www.laryscleaningservices.org/api",
     "http://127.0.0.1:8000",
     "http://localhost:8000",
   ]
@@ -34,7 +32,7 @@ export async function POST(request) {
   }
 
   const backends = getBackendBaseUrls();
-  let lastError = "";
+  const errors = [];
 
   for (const baseUrl of backends) {
     for (const requestUrl of getRequestUrls(baseUrl)) {
@@ -50,6 +48,16 @@ export async function POST(request) {
         const contentType = upstream.headers.get("content-type") || "";
 
         if (!contentType.includes("application/json")) {
+          errors.push(
+            `${requestUrl}: non-JSON response (status ${upstream.status}) ${
+              text ? `- ${text.slice(0, 160)}` : ""
+            }`
+          );
+
+          if (upstream.status >= 500) {
+            continue;
+          }
+
           return NextResponse.json(
             {
               detail:
@@ -67,7 +75,7 @@ export async function POST(request) {
           headers: { "content-type": "application/json" },
         });
       } catch (error) {
-        lastError = `${requestUrl}: ${error instanceof Error ? error.message : "Unknown upstream error"}`;
+        errors.push(`${requestUrl}: ${error instanceof Error ? error.message : "Unknown upstream error"}`);
       }
     }
   }
@@ -76,7 +84,7 @@ export async function POST(request) {
     {
       detail:
         "Appointment API is currently unreachable from the frontend server. Please try again shortly.",
-      upstream_error: lastError || null,
+      upstream_error: errors.join(" | ") || null,
     },
     { status: 502 }
   );
