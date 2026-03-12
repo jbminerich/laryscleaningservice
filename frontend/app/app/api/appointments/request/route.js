@@ -6,6 +6,8 @@ function getBackendBaseUrls() {
   const candidates = [
     fromEnv,
     "http://backend:8000",
+    "https://laryscleaningservices.org/api",
+    "https://www.laryscleaningservices.org/api",
     "http://127.0.0.1:8000",
     "http://localhost:8000",
   ]
@@ -13,6 +15,14 @@ function getBackendBaseUrls() {
     .map((value) => value.replace(/\/$/, ""));
 
   return [...new Set(candidates)];
+}
+
+function getRequestUrls(baseUrl) {
+  const urls = [`${baseUrl}/appointments/request`];
+  if (!baseUrl.endsWith("/api")) {
+    urls.push(`${baseUrl}/api/appointments/request`);
+  }
+  return urls;
 }
 
 export async function POST(request) {
@@ -27,23 +37,25 @@ export async function POST(request) {
   let lastError = "";
 
   for (const baseUrl of backends) {
-    try {
-      const upstream = await fetch(`${baseUrl}/appointments/request`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        cache: "no-store",
-      });
+    for (const requestUrl of getRequestUrls(baseUrl)) {
+      try {
+        const upstream = await fetch(requestUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          cache: "no-store",
+        });
 
-      const text = await upstream.text();
-      const contentType = upstream.headers.get("content-type") || "application/json";
+        const text = await upstream.text();
+        const contentType = upstream.headers.get("content-type") || "application/json";
 
-      return new Response(text, {
-        status: upstream.status,
-        headers: { "content-type": contentType },
-      });
-    } catch (error) {
-      lastError = error instanceof Error ? error.message : "Unknown upstream error";
+        return new Response(text, {
+          status: upstream.status,
+          headers: { "content-type": contentType },
+        });
+      } catch (error) {
+        lastError = `${requestUrl}: ${error instanceof Error ? error.message : "Unknown upstream error"}`;
+      }
     }
   }
 
