@@ -42,6 +42,51 @@ async function parseApiResponse(response) {
   }
 }
 
+function getAppointmentRequestCandidates() {
+  const candidates = ["/api", getApiBaseUrl()];
+
+  if (typeof window !== "undefined") {
+    const origin = window.location.origin;
+    candidates.push(`${origin}/api`);
+    candidates.push(origin);
+  }
+
+  candidates.push("https://laryscleaningservices.org/api");
+  candidates.push("https://laryscleaningservices.org");
+
+  return [...new Set(candidates.map((value) => value.replace(/\/$/, "")))];
+}
+
+async function submitAppointmentRequest(payload) {
+  const candidates = getAppointmentRequestCandidates();
+  let lastError = "";
+
+  for (const baseUrl of candidates) {
+    const response = await fetch(`${baseUrl}/appointments/request`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const parsed = await parseApiResponse(response);
+    if (response.ok) {
+      return parsed;
+    }
+
+    if (response.status === 404) {
+      lastError = parsed?.detail || "Endpoint not found.";
+      continue;
+    }
+
+    throw new Error(parsed?.detail || "Unable to submit appointment request.");
+  }
+
+  throw new Error(
+    lastError ||
+      "Unable to reach the appointment API (all known endpoints returned 404). Please contact support."
+  );
+}
+
 export default function RequestAppointmentPage() {
   const [form, setForm] = useState({
     first_name: "",
@@ -94,22 +139,11 @@ export default function RequestAppointmentPage() {
       return;
     }
 
-    const apiBaseUrl = getApiBaseUrl();
-
     try {
-      const response = await fetch(`${apiBaseUrl}/appointments/request`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          preferred_windows: normalizedWindows,
-        }),
+      await submitAppointmentRequest({
+        ...form,
+        preferred_windows: normalizedWindows,
       });
-
-      const payload = await parseApiResponse(response);
-      if (!response.ok) {
-        throw new Error(payload?.detail || "Unable to submit appointment request.");
-      }
 
       setStatus({
         loading: false,
