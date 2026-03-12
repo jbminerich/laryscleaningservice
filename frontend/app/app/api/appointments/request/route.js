@@ -47,11 +47,24 @@ export async function POST(request) {
         });
 
         const text = await upstream.text();
-        const contentType = upstream.headers.get("content-type") || "application/json";
+        const contentType = upstream.headers.get("content-type") || "";
+
+        if (!contentType.includes("application/json")) {
+          return NextResponse.json(
+            {
+              detail:
+                text ||
+                "Upstream API returned a non-JSON response. This usually indicates a proxy/backend issue.",
+              upstream_status: upstream.status,
+              upstream_url: requestUrl,
+            },
+            { status: upstream.status }
+          );
+        }
 
         return new Response(text, {
           status: upstream.status,
-          headers: { "content-type": contentType },
+          headers: { "content-type": "application/json" },
         });
       } catch (error) {
         lastError = `${requestUrl}: ${error instanceof Error ? error.message : "Unknown upstream error"}`;
