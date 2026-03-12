@@ -17,7 +17,16 @@ const RECURRENCE_OPTIONS = [
   { label: "Monthly", value: "monthly" },
 ];
 
-const emptyWindow = { start: "", end: "" };
+const emptyWindow = { start: "" };
+
+async function parseApiResponse(response) {
+  const raw = await response.text();
+  try {
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return { detail: raw || "Unexpected server response." };
+  }
+}
 
 export default function RequestAppointmentPage() {
   const [form, setForm] = useState({
@@ -61,10 +70,9 @@ export default function RequestAppointmentPage() {
     setStatus({ loading: true, error: "", success: "" });
 
     const normalizedWindows = windows
-      .filter((window) => window.start && window.end)
+      .filter((window) => window.start)
       .map((window) => ({
         start: new Date(window.start).toISOString(),
-        end: new Date(window.end).toISOString(),
       }));
 
     if (normalizedWindows.length === 0) {
@@ -84,7 +92,7 @@ export default function RequestAppointmentPage() {
         }),
       });
 
-      const payload = await response.json();
+      const payload = await parseApiResponse(response);
       if (!response.ok) {
         throw new Error(payload?.detail || "Unable to submit appointment request.");
       }
@@ -177,20 +185,11 @@ export default function RequestAppointmentPage() {
             {windows.map((window, index) => (
               <div className="field-grid three-col" key={`window-${index}`}>
                 <label>
-                  Start
+                  Preferred date/time
                   <input
                     type="datetime-local"
                     value={window.start}
                     onChange={(event) => updateWindow(index, "start", event.target.value)}
-                    required
-                  />
-                </label>
-                <label>
-                  End
-                  <input
-                    type="datetime-local"
-                    value={window.end}
-                    onChange={(event) => updateWindow(index, "end", event.target.value)}
                     required
                   />
                 </label>

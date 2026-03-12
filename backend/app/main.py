@@ -78,11 +78,13 @@ admin_sessions: dict[str, datetime] = {}
 
 class TimeWindow(BaseModel):
     start: datetime
-    end: datetime
+    end: datetime | None = None
 
     @field_validator("end")
     @classmethod
-    def validate_end_after_start(cls, value: datetime, info):
+    def validate_end_after_start(cls, value: datetime | None, info):
+        if value is None:
+            return value
         start = info.data.get("start")
         if start and value <= start:
             raise ValueError("end must be after start")
@@ -310,14 +312,17 @@ def admin_logout(x_admin_token: str | None = Header(default=None)) -> dict:
 
 @app.post("/appointments/request")
 def request_appointment(payload: AppointmentRequestIn) -> dict:
-    service_exists = any(service["name"] == payload.service_name for service in SERVICES)
-    if not service_exists:
+    service = next((service for service in SERVICES if service["name"] == payload.service_name), None)
+    if not service:
         raise HTTPException(status_code=400, detail="Unknown service_name")
 
     customer = get_or_create_customer(payload)
-    preferred_windows = [
-        {"start": to_utc(window.start), "end": to_utc(window.end)} for window in payload.preferred_windows
-    ]
+    default_duration_minutes = int(service["duration_minutes"])
+    preferred_windows = []
+    for window in payload.preferred_windows:
+        start = to_utc(window.start)
+        end = to_utc(window.end) if window.end else start + timedelta(minutes=default_duration_minutes)
+        preferred_windows.append({"start": start, "end": end})
 
     appointment = {
         "id": next(appointment_id_sequence),
