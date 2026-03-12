@@ -38,7 +38,9 @@ Point these records to `132.226.99.124`:
 
 - `laryscleaningservices.org`
 
-`www.laryscleaningservices.org` is optional. Add it only after creating a valid DNS record, then update Traefik router rules to include `www`.
+`www.laryscleaningservices.org` is optional. If you use it, create a DNS record for `www` pointing to the same host.
+
+> Current production routing is configured for both root and `www` hosts (including `/api` routes).
 
 ### 2) Create production env file
 

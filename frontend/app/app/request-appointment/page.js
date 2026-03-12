@@ -20,11 +20,25 @@ const RECURRENCE_OPTIONS = [
 const emptyWindow = { start: "" };
 
 async function parseApiResponse(response) {
+  const contentType = response.headers.get("content-type") || "";
   const raw = await response.text();
+
+  if (!raw) {
+    return {};
+  }
+
+  const looksLikeHtml = raw.trimStart().startsWith("<!DOCTYPE") || raw.includes("<html");
+  if (!contentType.includes("application/json") && looksLikeHtml) {
+    return {
+      detail:
+        "Unable to reach the appointment API right now (received an HTML page instead of API response). Please try again in a moment.",
+    };
+  }
+
   try {
-    return raw ? JSON.parse(raw) : {};
+    return JSON.parse(raw);
   } catch {
-    return { detail: raw || "Unexpected server response." };
+    return { detail: "Unexpected server response. Please try again." };
   }
 }
 
