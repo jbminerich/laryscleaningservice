@@ -6,6 +6,17 @@ import { getApiBaseUrl } from "../../lib/apiBaseUrl";
 
 const STATUS_OPTIONS = ["all", "requested", "confirmed", "proposed_time", "declined", "completed"];
 
+async function parseApiResponse(response) {
+  const raw = await response.text();
+  if (!raw) return {};
+
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return { detail: "Unexpected server response. Please try again." };
+  }
+}
+
 function toIso(value) {
   return value ? new Date(value).toISOString() : null;
 }
@@ -58,7 +69,7 @@ export default function AdminDashboardPage() {
         headers: { "x-admin-token": token },
       });
 
-      const payload = await response.json();
+      const payload = await parseApiResponse(response);
       if (!response.ok) {
         if (response.status === 401) {
           localStorage.removeItem("adminToken");
@@ -115,7 +126,7 @@ export default function AdminDashboardPage() {
         body: body ? JSON.stringify(body) : undefined,
       });
 
-      const payload = await response.json();
+      const payload = await parseApiResponse(response);
       if (!response.ok) {
         if (response.status === 401) {
           localStorage.removeItem("adminToken");
@@ -220,7 +231,7 @@ export default function AdminDashboardPage() {
         }),
       });
 
-      const payload = await response.json();
+      const payload = await parseApiResponse(response);
       if (!response.ok) {
         if (response.status === 401) {
           localStorage.removeItem("adminToken");

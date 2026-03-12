@@ -4,6 +4,17 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { getApiBaseUrl } from "../../lib/apiBaseUrl";
 
+async function parseApiResponse(response) {
+  const raw = await response.text();
+  if (!raw) return {};
+
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return { detail: "Unexpected server response. Please try again." };
+  }
+}
+
 export default function AdminLoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
@@ -25,7 +36,7 @@ export default function AdminLoginPage() {
         body: JSON.stringify({ username, password }),
       });
 
-      const payload = await response.json();
+      const payload = await parseApiResponse(response);
       if (!response.ok) {
         throw new Error(payload?.detail || "Login failed.");
       }

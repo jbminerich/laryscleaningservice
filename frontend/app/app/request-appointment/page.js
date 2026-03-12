@@ -35,11 +35,15 @@ async function parseApiResponse(response) {
     };
   }
 
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return { detail: "Unexpected server response. Please try again." };
+  if (contentType.includes("application/json")) {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return { detail: "Invalid JSON response from server." };
+    }
   }
+
+  return { detail: raw.slice(0, 240) || "Unexpected server response. Please try again." };
 }
 
 function getAppointmentRequestCandidates() {
