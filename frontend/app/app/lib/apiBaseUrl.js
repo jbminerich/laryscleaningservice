@@ -14,6 +14,14 @@ export function getApiBaseUrl() {
     if (hostname === "localhost" || hostname === "127.0.0.1") {
       return "http://localhost:8000";
     }
+
+    if (hostname === "www.laryscleaningservices.org") {
+      return "https://laryscleaningservices.org/api";
+    }
+
+    if (hostname === "laryscleaningservices.org") {
+      return "https://laryscleaningservices.org/api";
+    }
   }
 
   return "/api";
