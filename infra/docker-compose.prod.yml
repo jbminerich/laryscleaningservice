@@ -59,6 +59,8 @@ services:
   frontend:
     image: ${FRONTEND_IMAGE}
     restart: unless-stopped
+    environment:
+      - API_INTERNAL_BASE_URL=http://backend:8000
     labels:
       - traefik.enable=true
       - traefik.http.routers.frontend.rule=Host(`${APP_DOMAIN}`) || Host(`www.${APP_DOMAIN}`)

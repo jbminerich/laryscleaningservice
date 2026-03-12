@@ -43,7 +43,7 @@ async function parseApiResponse(response) {
 }
 
 function getAppointmentRequestCandidates() {
-  const candidates = ["/api", getApiBaseUrl()];
+  const candidates = ["/appointment-request-proxy", "/api", getApiBaseUrl()];
 
   if (typeof window !== "undefined") {
     const origin = window.location.origin;
@@ -62,7 +62,11 @@ async function submitAppointmentRequest(payload) {
   let lastError = "";
 
   for (const baseUrl of candidates) {
-    const response = await fetch(`${baseUrl}/appointments/request`, {
+    const requestUrl = baseUrl.endsWith("/appointment-request-proxy")
+      ? baseUrl
+      : `${baseUrl}/appointments/request`;
+
+    const response = await fetch(requestUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -76,6 +80,10 @@ async function submitAppointmentRequest(payload) {
     if (response.status === 404) {
       lastError = parsed?.detail || "Endpoint not found.";
       continue;
+    }
+
+    if (parsed?.upstream_error) {
+      throw new Error(`${parsed?.detail || "Unable to submit appointment request."} (${parsed.upstream_error})`);
     }
 
     throw new Error(parsed?.detail || "Unable to submit appointment request.");
