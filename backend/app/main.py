@@ -310,8 +310,7 @@ def admin_logout(x_admin_token: str | None = Header(default=None)) -> dict:
     return {"message": "Logged out"}
 
 
-@app.post("/appointments/request")
-def request_appointment(payload: AppointmentRequestIn) -> dict:
+def create_appointment_request(payload: AppointmentRequestIn) -> dict:
     service = next((service for service in SERVICES if service["name"] == payload.service_name), None)
     if not service:
         raise HTTPException(status_code=400, detail="Unknown service_name")
@@ -350,6 +349,17 @@ def request_appointment(payload: AppointmentRequestIn) -> dict:
         "message": "Appointment request received",
         "appointment": serialize_appointment(appointment),
     }
+
+
+@app.post("/appointments/request")
+def request_appointment(payload: AppointmentRequestIn) -> dict:
+    return create_appointment_request(payload)
+
+
+@app.post("/api/appointments/request")
+def request_appointment_api_prefixed(payload: AppointmentRequestIn) -> dict:
+    # Supports environments where reverse proxy may not strip /api before forwarding.
+    return create_appointment_request(payload)
 
 
 @app.get("/availability")
